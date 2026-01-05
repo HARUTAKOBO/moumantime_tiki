@@ -11,7 +11,6 @@
   --accent:#f2b5b5;
   --accent2:#b5d8f2;
   --border:#e0cfc2;
-  --owned:#f6b6b6;
 }
 
 body{
@@ -96,13 +95,33 @@ h2{
   margin:6px 0;
 }
 
+/* 任命表示 */
 .assign{
   margin:6px 0;
-  padding:4px 6px;
+  padding:6px;
   font-size:12px;
   border:1px dashed var(--border);
   border-radius:8px;
-  min-height:32px;
+}
+
+.role{
+  display:inline-block;
+  margin-right:6px;
+  padding:2px 6px;
+  border-radius:6px;
+  background:#eee;
+  color:#999;
+  font-weight:bold;
+}
+
+.role.active{
+  background:#f2b5b5;
+  color:#4a3b2a;
+}
+
+.assign-facility{
+  margin-top:4px;
+  font-size:11px;
 }
 
 .lv{
@@ -152,7 +171,7 @@ h2{
 <div class="card" id="result"></div>
 
 <script>
-const STORAGE_KEY="chigi_state_v2";
+const STORAGE_KEY="chigi_state_v3";
 
 const facilities=[
  ["朱雀大通り","絵画","剣","琴"],
@@ -235,7 +254,13 @@ function renderCharacters(){
         </button>
 
         <div class="skills">🎨 ${obj.skills.join("・")}</div>
-        <div class="assign">—</div>
+
+        <div class="assign">
+          <span class="role">店長</span>
+          <span class="role">副店長</span>
+          <span class="role">補欠</span>
+          <div class="assign-facility">—</div>
+        </div>
 
         <div class="lv">
           Lv <input type="number" value="${obj.lv}" readonly ${obj.owned?"":"disabled"}>
@@ -252,17 +277,15 @@ function renderCharacters(){
 }
 
 function toggleOwned(i){
-  const c=state[i];
-  c.owned=!c.owned;
+  state[i].owned=!state[i].owned;
   saveState();
   renderCharacters();
   run();
 }
 
 function changeLv(i,d){
-  const c=state[i];
-  if(!c.owned)return;
-  c.lv=Math.max(0,c.lv+d);
+  if(!state[i].owned)return;
+  state[i].lv=Math.max(0,state[i].lv+d);
   saveState();
   run();
 }
@@ -310,9 +333,17 @@ function run(){
 
   state.forEach((c,i)=>{
     const box=charArea.children[i].querySelector(".assign");
-    box.innerHTML=c.assign
-      ? `🏮 ${c.assign.facility}<br><strong>${c.assign.role}</strong>`
-      : "—";
+    const roles=box.querySelectorAll(".role");
+    roles.forEach(r=>r.classList.remove("active"));
+
+    if(c.assign){
+      if(c.assign.role==="店長")roles[0].classList.add("active");
+      if(c.assign.role==="副店長")roles[1].classList.add("active");
+      if(c.assign.role==="補欠")roles[2].classList.add("active");
+      box.querySelector(".assign-facility").textContent="🏮 "+c.assign.facility;
+    }else{
+      box.querySelector(".assign-facility").textContent="—";
+    }
   });
 }
 
