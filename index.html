@@ -277,9 +277,21 @@ function renderCharacters(){
 }
 
 function toggleOwned(i){
-  state[i].owned=!state[i].owned;
+  const c = state[i];
+  c.owned = !c.owned;
+
+  const card = charArea.children[i];
+  card.classList.toggle("off", !c.owned);
+
+  const btn = card.querySelector(".exec-btn");
+  btn.textContent = c.owned ? "保有中" : "未保有";
+  btn.classList.toggle("owned", c.owned);
+
+  // Lv操作の有効・無効
+  card.querySelectorAll(".lv input, .lv button")
+    .forEach(el => el.disabled = !c.owned);
+
   saveState();
-  renderCharacters();
   run();
 }
 
