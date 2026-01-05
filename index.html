@@ -4,11 +4,26 @@
 <meta charset="UTF-8">
 <title>育成バランス配置シミュレーター</title>
 <style>
-body { font-family: sans-serif; margin: 20px; }
-table { border-collapse: collapse; margin-bottom: 20px; }
-th, td { border: 1px solid #666; padding: 6px 10px; }
-th { background: #eee; }
-button { padding: 10px 20px; font-size: 16px; }
+body {
+  font-family: sans-serif;
+  margin: 20px;
+}
+table {
+  border-collapse: collapse;
+  margin-bottom: 24px;
+}
+th, td {
+  border: 1px solid #666;
+  padding: 6px 10px;
+  text-align: center;
+}
+th {
+  background: #eee;
+}
+button {
+  padding: 10px 20px;
+  font-size: 16px;
+}
 </style>
 </head>
 <body>
@@ -18,18 +33,24 @@ button { padding: 10px 20px; font-size: 16px; }
 <h2>① 保有している知己</h2>
 <table id="charTable">
 <tr>
-  <th>使用</th><th>名前</th><th>技芸</th><th>合計Lv</th>
+  <th>使用</th>
+  <th>名前</th>
+  <th>技芸</th>
+  <th>合計Lv</th>
 </tr>
 </table>
 
 <h2>② 施設</h2>
 <table id="facilityTable">
 <tr><th>施設</th><th>要求①</th><th>要求②</th><th>要求③</th></tr>
-<tr><td>朱雀大通り</td><td>書道</td><td>剣</td><td>琴</td></tr>
+<tr><td>朱雀大通り</td><td>絵画</td><td>剣</td><td>琴</td></tr>
 <tr><td>胡姫酒場</td><td>将棋</td><td>馬</td><td>生け花</td></tr>
 <tr><td>影絵芝居小屋</td><td>酒</td><td>馬</td><td>書道</td></tr>
 <tr><td>華清池</td><td>酒</td><td>武</td><td>将棋</td></tr>
 <tr><td>遊芸館</td><td>詩歌</td><td>射</td><td>酒</td></tr>
+<tr><td>杏園</td><td>詩歌</td><td>射</td><td>書道</td></tr>
+<tr><td>雁塔広場</td><td>絵画</td><td>武</td><td>生け花</td></tr>
+<tr><td>大慈恩寺</td><td>琴</td><td>剣</td><td>茶</td></tr>
 </table>
 
 <button onclick="run()">配置・育成を実行</button>
@@ -40,42 +61,43 @@ button { padding: 10px 20px; font-size: 16px; }
 </table>
 
 <script>
-// ===== 知己マスタ（固定） =====
+// ===============================
+// 知己マスタ（完全版）
+// ===============================
 const characters = [
- {name:"林婉児", skills:["絵画","剣","琴"]},
- {name:"クレオパトラ", skills:["絵画","武","生け花"]},
- {name:"瑤姫", skills:["絵画","武","生け花"]},
- {name:"ムーラン", skills:["絵画","剣","琴"]},
- {name:"エカチュリーナ", skills:["琴","剣","茶"]},
- {name:"上官婉児", skills:["琴","剣","酒"]},
- {name:"貂蝉", skills:["琴","馬","茶"]},
- {name:"お市", skills:["酒","馬","紙"]},
- {name:"高漸離", skills:["酒","剣","絵画"]},
- {name:"趙飛燕", skills:["詩歌","射","酒"]},
- {name:"李清照", skills:["詩歌","射","書道"]},
- {name:"西施", skills:["詩歌","馬","書道"]},
- {name:"妲己", skills:["将棋","剣","琴"]},
- {name:"精衛", skills:["将棋","射","生け花"]},
- {name:"ジャンヌ・ダルク", skills:["将棋","馬","生け花"]},
- {name:"鐘無艶", skills:["茶","武","書道"]},
- {name:"鈕祜禄氏", skills:["茶","武","絵画"]},
- {name:"ヴィクトリア", skills:["茶","武","将棋"]}
+  {name:"林婉児", skills:["絵画","剣","琴"], lv:82},
+  {name:"クレオパトラ", skills:["絵画","武","生け花"], lv:70},
+  {name:"瑤姫", skills:["絵画","武","生け花"], lv:69},
+  {name:"ムーラン", skills:["絵画","剣","琴"], lv:57},
+  {name:"エカチュリーナ", skills:["琴","剣","茶"], lv:77},
+  {name:"上官婉児", skills:["琴","剣","酒"], lv:65},
+  {name:"貂蝉", skills:["琴","馬","茶"], lv:53},
+  {name:"お市", skills:["酒","馬","紙"], lv:92},
+  {name:"高漸離", skills:["酒","剣","絵画"], lv:51},
+  {name:"趙飛燕", skills:["詩歌","射","酒"], lv:90},
+  {name:"葉軽眉", skills:["詩歌","射","書道"], lv:3},
+  {name:"李清照", skills:["詩歌","射","書道"], lv:79},
+  {name:"李師師", skills:["詩歌","射","書道"], lv:3},
+  {name:"西施", skills:["詩歌","馬","書道"], lv:61},
+  {name:"妲己", skills:["将棋","剣","琴"], lv:68},
+  {name:"精衛", skills:["将棋","射","生け花"], lv:76},
+  {name:"ジャンヌ・ダルク", skills:["将棋","馬","生け花"], lv:62},
+  {name:"鐘無艶", skills:["茶","武","書道"], lv:91},
+  {name:"鈕祜禄氏", skills:["茶","武","絵画"], lv:40},
+  {name:"ヴィクトリア", skills:["茶","武","将棋"], lv:3}
 ];
 
-// ===== 状態管理 =====
-const state = [];
-
+// ===============================
 // 初期描画
-const table = document.getElementById("charTable");
-characters.forEach(c=>{
-  const skillLv = {};
-  c.skills.forEach(s=>skillLv[s]=10);
+// ===============================
+const state = [];
+const charTable = document.getElementById("charTable");
 
+characters.forEach(c => {
   state.push({
     name: c.name,
     skills: c.skills,
-    skillLv,
-    lv: 50,
+    lv: c.lv,
     use: false
   });
 
@@ -84,16 +106,19 @@ characters.forEach(c=>{
     <td><input type="checkbox"></td>
     <td>${c.name}</td>
     <td>${c.skills.join("・")}</td>
-    <td><input type="number" value="50"></td>`;
-  table.appendChild(tr);
+    <td><input type="number" value="${c.lv}" style="width:70px"></td>
+  `;
+  charTable.appendChild(tr);
 });
 
-// ===== メイン処理 =====
-function run(){
+// ===============================
+// メイン処理
+// ===============================
+function run() {
 
   // 入力反映
-  document.querySelectorAll("#charTable tr").forEach((r,i)=>{
-    if(i===0) return;
+  document.querySelectorAll("#charTable tr").forEach((r, i) => {
+    if (i === 0) return;
     state[i-1].use = r.children[0].children[0].checked;
     state[i-1].lv  = Number(r.children[3].children[0].value);
   });
@@ -101,58 +126,56 @@ function run(){
   const result = document.getElementById("result");
   result.innerHTML = `<tr><th>施設</th><th>店長</th><th>副店長</th><th>補欠</th></tr>`;
 
-  const usedLeaders = new Set(); // 店長・副店長兼任禁止
+  const usedLeaders = new Set(); // 店長・副店長は兼任不可
 
-  document.querySelectorAll("#facilityTable tr").forEach((r,i)=>{
-    if(i===0) return;
+  document.querySelectorAll("#facilityTable tr").forEach((r, i) => {
+    if (i === 0) return;
 
+    const facility = r.children[0].innerText;
     const req = [
       r.children[1].innerText,
       r.children[2].innerText,
       r.children[3].innerText
     ];
 
+    // 候補抽出（保有＋未使用）
     const candidates = state.filter(c =>
       c.use && !usedLeaders.has(c.name)
     );
 
-    const ranked = candidates.map(c=>{
-      return {
-        ref: c,
-        match: req.filter(x=>c.skills.includes(x)).length
-      };
-    }).sort((a,b)=>
+    // 評価
+    const ranked = candidates.map(c => {
+      const match = req.filter(x => c.skills.includes(x)).length;
+      return { ref: c, match };
+    }).sort((a, b) =>
       b.match - a.match || a.ref.lv - b.ref.lv
     );
 
-    const picked = ranked.slice(0,3);
+    const picked = ranked.slice(0, 3);
 
-    // 兼任防止
-    if(picked[0]) usedLeaders.add(picked[0].ref.name);
-    if(picked[1]) usedLeaders.add(picked[1].ref.name);
+    // 兼任防止（店長・副店長）
+    if (picked[0]) usedLeaders.add(picked[0].ref.name);
+    if (picked[1]) usedLeaders.add(picked[1].ref.name);
 
-    // 育成処理
+    // 育成（店長100%、副店長15%、補欠0%）
     const expRate = [1.0, 0.15, 0];
-    picked.forEach((p,idx)=>{
+    picked.forEach((p, idx) => {
       const exp = Math.floor(30 * expRate[idx]);
       p.ref.lv += exp;
-
-      const per = Math.floor(exp / p.ref.skills.length);
-      p.ref.skills.forEach(s=>{
-        p.ref.skillLv[s] += per;
-      });
     });
 
+    // 出力
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${r.children[0].innerText}</td>
+      <td>${facility}</td>
       <td>${picked[0]?.ref.name || ""}</td>
       <td>${picked[1]?.ref.name || ""}</td>
-      <td>${picked[2]?.ref.name || ""}</td>`;
+      <td>${picked[2]?.ref.name || ""}</td>
+    `;
     result.appendChild(tr);
   });
 
-  alert("配置・育成が完了しました");
+  alert("配置と育成が完了しました");
 }
 </script>
 
