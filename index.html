@@ -35,16 +35,13 @@ h2{
 button{
   background: var(--accent2);
   border:none;
-  padding:12px 24px;
-  font-size:16px;
-  border-radius:20px;
+  padding:6px 10px;
+  font-size:12px;
+  border-radius:10px;
   cursor:pointer;
-  box-shadow:0 3px 6px rgba(0,0,0,0.15);
 }
 
-button:hover{
-  opacity:0.85;
-}
+button:hover{ opacity:0.85; }
 
 .card{
   background:var(--card);
@@ -56,7 +53,7 @@ button:hover{
 
 .char-grid{
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
   gap:16px;
 }
 
@@ -76,20 +73,17 @@ button:hover{
 }
 
 .char-img{
-  max-width:70px;     /* 横の最大値だけ決める */
-  max-height:90px;    /* 縦に少し余裕を持たせる */
+  max-width:70px;
+  max-height:90px;
   width:auto;
   height:auto;
   border-radius:10px;
-  object-fit:contain; /* 画像全体を表示 */
+  object-fit:contain;
   border:1px solid var(--border);
   flex-shrink:0;
 }
 
-
-.char-info{
-  flex:1;
-}
+.char-info{ flex:1; }
 
 .char-name{
   font-weight:bold;
@@ -103,11 +97,24 @@ button:hover{
 
 .lv{
   margin-top:6px;
+  font-size:14px;
 }
 
-.facility{
-  margin-bottom:8px;
+.lv input{
+  width:50px;
+  text-align:center;
 }
+
+.lv-btns{
+  margin-top:4px;
+}
+
+.lv-btns button{
+  background:var(--accent);
+  margin:2px;
+}
+
+.facility{ margin-bottom:8px; }
 
 .result-card{
   background:#fff;
@@ -187,42 +194,46 @@ characters.forEach(c=>{
     name:c[0],
     skills:c[1],
     lv:c[2],
-    use: c[2] > 0   // ★ Lv0なら自動でfalse
+    owned:c[2]>0
   };
   state.push(obj);
 
   const d=document.createElement("div");
-  d.className="char-card" + (obj.use ? "" : " off");
+  d.className="char-card"+(obj.owned?"":" off");
 
   d.innerHTML=`
     <img class="char-img"
-         src="img/${obj.name}.jpg"
-         alt="${obj.name}"
-         onerror="this.onerror=null;this.src='img/${obj.name}.png'">
+      src="img/${obj.name}.jpg"
+      onerror="this.onerror=null;this.src='img/${obj.name}.png'">
+
     <div class="char-info">
       <label>
-        <input type="checkbox"
-               ${obj.use ? "checked" : ""}
-               onchange="obj.use=this.checked; d.classList.toggle('off', !this.checked)">
+        <input type="checkbox" ${obj.owned?"checked":""}
+          onchange="
+            obj.owned=this.checked;
+            d.classList.toggle('off',!this.checked);
+            d.querySelectorAll('.lv input, .lv button')
+              .forEach(el=>el.disabled=!this.checked);
+          ">
         <span class="char-name">${obj.name}</span>
       </label>
+
       <div class="skills">🎨 ${obj.skills.join("・")}</div>
+
       <div class="lv">
-        Lv <input type="number" value="${obj.lv}" style="width:60px"
-        onchange="
-          obj.lv=this.value;
-          if(this.value==0){
-            obj.use=false;
-            this.closest('.char-card').classList.add('off');
-            this.closest('.char-card').querySelector('input[type=checkbox]').checked=false;
-          }
-        ">
+        Lv
+        <input type="number" value="${obj.lv}" readonly ${obj.owned?"":"disabled"}>
+        <div class="lv-btns">
+          <button ${obj.owned?"":"disabled"} onclick="obj.lv+=10;this.parentNode.previousElementSibling.value=obj.lv">+10</button>
+          <button ${obj.owned?"":"disabled"} onclick="obj.lv+=1; this.parentNode.previousElementSibling.value=obj.lv">+1</button>
+          <button ${obj.owned?"":"disabled"} onclick="obj.lv=Math.max(0,obj.lv-1); this.parentNode.previousElementSibling.value=obj.lv">-1</button>
+          <button ${obj.owned?"":"disabled"} onclick="obj.lv=Math.max(0,obj.lv-10);this.parentNode.previousElementSibling.value=obj.lv">-10</button>
+        </div>
       </div>
     </div>
   `;
   charArea.appendChild(d);
 });
-
 
 const facilityArea=document.getElementById("facilityArea");
 facilities.forEach(f=>{
@@ -239,9 +250,10 @@ function run(){
 
   facilities.forEach(f=>{
     const req=f.slice(1);
-    const ranked=state.filter(c=>c.use && !used.has(c.name))
+    const ranked=state
+      .filter(c=>c.owned && c.lv>0 && !used.has(c.name))
       .map(c=>({c,match:req.filter(r=>c.skills.includes(r)).length}))
-      .sort((a,b)=>b.match-a.match||a.c.lv-b.c.lv);
+      .sort((a,b)=>b.match-a.match||b.c.lv-a.c.lv);
 
     if(ranked[0]) used.add(ranked[0].c.name);
     if(ranked[1]) used.add(ranked[1].c.name);
