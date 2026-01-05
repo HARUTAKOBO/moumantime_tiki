@@ -1,0 +1,103 @@
+Sub 店長副店長自動割当_育成優先_安全版()
+
+    Dim ws As Worksheet
+    Dim wsC As Worksheet
+    Set ws = Worksheets("施設配置")
+    Set wsC = Worksheets("知己一覧")
+
+    Dim lastFacilityRow As Long
+    Dim lastCharRow As Long
+    Dim r As Long, i As Long
+
+    lastFacilityRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+    lastCharRow = wsC.Cells(wsC.Rows.Count, "A").End(xlUp).Row
+
+    Dim req(1 To 3) As String
+    Dim score() As Long
+    Dim level() As Long
+    Dim names() As String
+
+    ReDim score(2 To lastCharRow)
+    ReDim level(2 To lastCharRow)
+    ReDim names(2 To lastCharRow)
+
+    ' ===== 施設ごと処理 =====
+    For r = 2 To lastFacilityRow
+
+        ' 要求技芸
+        req(1) = ws.Cells(r, "B").Value
+        req(2) = ws.Cells(r, "C").Value
+        req(3) = ws.Cells(r, "D").Value
+
+        ' ===== 知己ごとの一致数計算 =====
+        For i = 2 To lastCharRow
+            score(i) = 0
+            names(i) = wsC.Cells(i, "A").Value
+            level(i) = wsC.Cells(i, "E").Value
+
+            If req(1) = wsC.Cells(i, "B").Value _
+            Or req(1) = wsC.Cells(i, "C").Value _
+            Or req(1) = wsC.Cells(i, "D").Value Then score(i) = score(i) + 1
+
+            If req(2) = wsC.Cells(i, "B").Value _
+            Or req(2) = wsC.Cells(i, "C").Value _
+            Or req(2) = wsC.Cells(i, "D").Value Then score(i) = score(i) + 1
+
+            If req(3) = wsC.Cells(i, "B").Value _
+            Or req(3) = wsC.Cells(i, "C").Value _
+            Or req(3) = wsC.Cells(i, "D").Value Then score(i) = score(i) + 1
+        Next i
+
+        ' ===== 上位3名決定 =====
+        Dim first As Long, second As Long, third As Long
+        first = 0: second = 0: third = 0
+
+        For i = 2 To lastCharRow
+
+            ' --- 1位 ---
+            If first = 0 Then
+                first = i
+
+            ElseIf score(i) > score(first) _
+               Or (score(i) = score(first) And level(i) < level(first)) Then
+
+                third = second
+                second = first
+                first = i
+
+            ' --- 2位 ---
+            ElseIf second = 0 Then
+                If i <> first Then second = i
+
+            ElseIf score(i) > score(second) _
+               Or (score(i) = score(second) And level(i) < level(second)) Then
+
+                If i <> first Then
+                    third = second
+                    second = i
+                End If
+
+            ' --- 3位 ---
+            ElseIf third = 0 Then
+                If i <> first And i <> second Then third = i
+
+            ElseIf score(i) > score(third) _
+               Or (score(i) = score(third) And level(i) < level(third)) Then
+
+                If i <> first And i <> second Then
+                    third = i
+                End If
+            End If
+
+        Next i
+
+        ' ===== 出力 =====
+        ws.Cells(r, "E").Value = IIf(first > 0, names(first), "")
+        ws.Cells(r, "F").Value = IIf(second > 0, names(second), "")
+        ws.Cells(r, "G").Value = IIf(third > 0, names(third), "")
+
+    Next r
+
+    MsgBox "育成バランスを考慮した配置が完了しました", vbInformation
+
+End Sub
