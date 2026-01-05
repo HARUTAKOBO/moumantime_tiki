@@ -76,13 +76,16 @@ button:hover{
 }
 
 .char-img{
-  width:64px;
-  height:64px;
+  max-width:70px;     /* 横の最大値だけ決める */
+  max-height:90px;    /* 縦に少し余裕を持たせる */
+  width:auto;
+  height:auto;
   border-radius:10px;
-  object-fit:cover;
+  object-fit:contain; /* 画像全体を表示 */
   border:1px solid var(--border);
   flex-shrink:0;
 }
+
 
 .char-info{
   flex:1;
