@@ -3,179 +3,203 @@
 <head>
 <meta charset="UTF-8">
 <title>育成バランス配置シミュレーター</title>
+
 <style>
-body {
-  font-family: sans-serif;
-  margin: 20px;
+:root{
+  --bg:#fff7f0;
+  --card:#ffffff;
+  --accent:#f2b5b5;
+  --accent2:#b5d8f2;
+  --border:#e0cfc2;
 }
-table {
-  border-collapse: collapse;
-  margin-bottom: 24px;
+
+body{
+  font-family: "Hiragino Maru Gothic ProN","Yu Gothic",sans-serif;
+  background: var(--bg);
+  margin:0;
+  padding:20px;
+  color:#4a3b2a;
 }
-th, td {
-  border: 1px solid #666;
-  padding: 6px 10px;
-  text-align: center;
+
+h1{
+  text-align:center;
+  margin-bottom:30px;
 }
-th {
-  background: #eee;
+
+h2{
+  margin-top:40px;
+  border-left:6px solid var(--accent);
+  padding-left:10px;
 }
-button {
-  padding: 10px 20px;
-  font-size: 16px;
+
+button{
+  background: var(--accent2);
+  border:none;
+  padding:12px 24px;
+  font-size:16px;
+  border-radius:20px;
+  cursor:pointer;
+  box-shadow:0 3px 6px rgba(0,0,0,0.15);
+}
+
+button:hover{
+  opacity:0.85;
+}
+
+.card{
+  background:var(--card);
+  border-radius:16px;
+  box-shadow:0 6px 12px rgba(0,0,0,0.15);
+  padding:16px;
+  margin-bottom:20px;
+}
+
+.char-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  gap:16px;
+}
+
+.char-card{
+  border:2px solid var(--border);
+  border-radius:14px;
+  padding:12px;
+  background:#fffdf9;
+}
+
+.char-name{
+  font-weight:bold;
+  font-size:18px;
+}
+
+.skills{
+  font-size:14px;
+  margin:6px 0;
+}
+
+.lv{
+  margin-top:6px;
+}
+
+.facility{
+  margin-bottom:8px;
+}
+
+.result-card{
+  background:#fff;
+  border-radius:14px;
+  padding:10px;
+  margin-bottom:10px;
+  box-shadow:0 4px 8px rgba(0,0,0,0.12);
 }
 </style>
 </head>
+
 <body>
 
-<h1>育成バランス配置シミュレーター</h1>
+<h1>🌸 育成バランス配置シミュレーター 🌸</h1>
 
 <h2>① 保有している知己</h2>
-<table id="charTable">
-<tr>
-  <th>使用</th>
-  <th>名前</th>
-  <th>技芸</th>
-  <th>合計Lv</th>
-</tr>
-</table>
+<div class="card">
+  <div class="char-grid" id="charArea"></div>
+</div>
 
-<h2>② 施設</h2>
-<table id="facilityTable">
-<tr><th>施設</th><th>要求①</th><th>要求②</th><th>要求③</th></tr>
-<tr><td>朱雀大通り</td><td>絵画</td><td>剣</td><td>琴</td></tr>
-<tr><td>胡姫酒場</td><td>将棋</td><td>馬</td><td>生け花</td></tr>
-<tr><td>影絵芝居小屋</td><td>酒</td><td>馬</td><td>書道</td></tr>
-<tr><td>華清池</td><td>酒</td><td>武</td><td>将棋</td></tr>
-<tr><td>遊芸館</td><td>詩歌</td><td>射</td><td>酒</td></tr>
-<tr><td>杏園</td><td>詩歌</td><td>射</td><td>書道</td></tr>
-<tr><td>雁塔広場</td><td>絵画</td><td>武</td><td>生け花</td></tr>
-<tr><td>大慈恩寺</td><td>琴</td><td>剣</td><td>茶</td></tr>
-</table>
+<h2>② 施設一覧</h2>
+<div class="card" id="facilityArea"></div>
 
-<button onclick="run()">配置・育成を実行</button>
+<div style="text-align:center;margin:30px;">
+  <button onclick="run()">✨ 配置・育成を実行 ✨</button>
+</div>
 
 <h2>③ 配置結果</h2>
-<table id="result">
-<tr><th>施設</th><th>店長</th><th>副店長</th><th>補欠</th></tr>
-</table>
+<div class="card" id="result"></div>
 
 <script>
-// ===============================
-// 知己マスタ（完全版）
-// ===============================
-const characters = [
-  {name:"林婉児", skills:["絵画","剣","琴"], lv:82},
-  {name:"クレオパトラ", skills:["絵画","武","生け花"], lv:70},
-  {name:"瑤姫", skills:["絵画","武","生け花"], lv:69},
-  {name:"ムーラン", skills:["絵画","剣","琴"], lv:57},
-  {name:"エカチュリーナ", skills:["琴","剣","茶"], lv:77},
-  {name:"上官婉児", skills:["琴","剣","酒"], lv:65},
-  {name:"貂蝉", skills:["琴","馬","茶"], lv:53},
-  {name:"お市", skills:["酒","馬","紙"], lv:92},
-  {name:"高漸離", skills:["酒","剣","絵画"], lv:51},
-  {name:"趙飛燕", skills:["詩歌","射","酒"], lv:90},
-  {name:"葉軽眉", skills:["詩歌","射","書道"], lv:3},
-  {name:"李清照", skills:["詩歌","射","書道"], lv:79},
-  {name:"李師師", skills:["詩歌","射","書道"], lv:3},
-  {name:"西施", skills:["詩歌","馬","書道"], lv:61},
-  {name:"妲己", skills:["将棋","剣","琴"], lv:68},
-  {name:"精衛", skills:["将棋","射","生け花"], lv:76},
-  {name:"ジャンヌ・ダルク", skills:["将棋","馬","生け花"], lv:62},
-  {name:"鐘無艶", skills:["茶","武","書道"], lv:91},
-  {name:"鈕祜禄氏", skills:["茶","武","絵画"], lv:40},
-  {name:"ヴィクトリア", skills:["茶","武","将棋"], lv:3}
+const facilities = [
+ ["朱雀大通り","絵画","剣","琴"],
+ ["胡姫酒場","将棋","馬","生け花"],
+ ["影絵芝居小屋","酒","馬","書道"],
+ ["華清池","酒","武","将棋"],
+ ["遊芸館","詩歌","射","酒"],
+ ["杏園","詩歌","射","書道"],
+ ["雁塔広場","絵画","武","生け花"],
+ ["大慈恩寺","琴","剣","茶"]
 ];
 
-// ===============================
-// 初期描画
-// ===============================
-const state = [];
-const charTable = document.getElementById("charTable");
+const characters = [
+ ["林婉児",["絵画","剣","琴"],82],
+ ["クレオパトラ",["絵画","武","生け花"],70],
+ ["瑤姫",["絵画","武","生け花"],69],
+ ["ムーラン",["絵画","剣","琴"],57],
+ ["エカチュリーナ",["琴","剣","茶"],77],
+ ["上官婉児",["琴","剣","酒"],65],
+ ["貂蝉",["琴","馬","茶"],53],
+ ["お市",["酒","馬","紙"],92],
+ ["高漸離",["酒","剣","絵画"],51],
+ ["趙飛燕",["詩歌","射","酒"],90],
+ ["李清照",["詩歌","射","書道"],79],
+ ["西施",["詩歌","馬","書道"],61],
+ ["妲己",["将棋","剣","琴"],68],
+ ["精衛",["将棋","射","生け花"],76],
+ ["ジャンヌ・ダルク",["将棋","馬","生け花"],62],
+ ["鐘無艶",["茶","武","書道"],91],
+ ["鈕祜禄氏",["茶","武","絵画"],40],
+ ["ヴィクトリア",["茶","武","将棋"],3]
+];
 
-characters.forEach(c => {
-  state.push({
-    name: c.name,
-    skills: c.skills,
-    lv: c.lv,
-    use: false
-  });
+const state=[];
+const charArea=document.getElementById("charArea");
 
-  const tr = document.createElement("tr");
-  tr.innerHTML = `
-    <td><input type="checkbox"></td>
-    <td>${c.name}</td>
-    <td>${c.skills.join("・")}</td>
-    <td><input type="number" value="${c.lv}" style="width:70px"></td>
+characters.forEach(c=>{
+  const obj={name:c[0],skills:c[1],lv:c[2],use:false};
+  state.push(obj);
+
+  const d=document.createElement("div");
+  d.className="char-card";
+  d.innerHTML=`
+    <label>
+      <input type="checkbox" onchange="obj.use=this.checked">
+      <span class="char-name">${obj.name}</span>
+    </label>
+    <div class="skills">🎨 ${obj.skills.join("・")}</div>
+    <div class="lv">Lv <input type="number" value="${obj.lv}" style="width:60px"
+      onchange="obj.lv=this.value"></div>
   `;
-  charTable.appendChild(tr);
+  charArea.appendChild(d);
 });
 
-// ===============================
-// メイン処理
-// ===============================
-function run() {
+const facilityArea=document.getElementById("facilityArea");
+facilities.forEach(f=>{
+  const d=document.createElement("div");
+  d.className="facility";
+  d.textContent=`${f[0]}：${f[1]}・${f[2]}・${f[3]}`;
+  facilityArea.appendChild(d);
+});
 
-  // 入力反映
-  document.querySelectorAll("#charTable tr").forEach((r, i) => {
-    if (i === 0) return;
-    state[i-1].use = r.children[0].children[0].checked;
-    state[i-1].lv  = Number(r.children[3].children[0].value);
-  });
+function run(){
+  const result=document.getElementById("result");
+  result.innerHTML="";
+  const used=new Set();
 
-  const result = document.getElementById("result");
-  result.innerHTML = `<tr><th>施設</th><th>店長</th><th>副店長</th><th>補欠</th></tr>`;
+  facilities.forEach(f=>{
+    const req=f.slice(1);
+    const ranked=state.filter(c=>c.use && !used.has(c.name))
+      .map(c=>({c,match:req.filter(r=>c.skills.includes(r)).length}))
+      .sort((a,b)=>b.match-a.match||a.c.lv-b.c.lv);
 
-  const usedLeaders = new Set(); // 店長・副店長は兼任不可
+    if(ranked[0]) used.add(ranked[0].c.name);
+    if(ranked[1]) used.add(ranked[1].c.name);
 
-  document.querySelectorAll("#facilityTable tr").forEach((r, i) => {
-    if (i === 0) return;
-
-    const facility = r.children[0].innerText;
-    const req = [
-      r.children[1].innerText,
-      r.children[2].innerText,
-      r.children[3].innerText
-    ];
-
-    // 候補抽出（保有＋未使用）
-    const candidates = state.filter(c =>
-      c.use && !usedLeaders.has(c.name)
-    );
-
-    // 評価
-    const ranked = candidates.map(c => {
-      const match = req.filter(x => c.skills.includes(x)).length;
-      return { ref: c, match };
-    }).sort((a, b) =>
-      b.match - a.match || a.ref.lv - b.ref.lv
-    );
-
-    const picked = ranked.slice(0, 3);
-
-    // 兼任防止（店長・副店長）
-    if (picked[0]) usedLeaders.add(picked[0].ref.name);
-    if (picked[1]) usedLeaders.add(picked[1].ref.name);
-
-    // 育成（店長100%、副店長15%、補欠0%）
-    const expRate = [1.0, 0.15, 0];
-    picked.forEach((p, idx) => {
-      const exp = Math.floor(30 * expRate[idx]);
-      p.ref.lv += exp;
-    });
-
-    // 出力
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${facility}</td>
-      <td>${picked[0]?.ref.name || ""}</td>
-      <td>${picked[1]?.ref.name || ""}</td>
-      <td>${picked[2]?.ref.name || ""}</td>
+    const div=document.createElement("div");
+    div.className="result-card";
+    div.innerHTML=`
+      <strong>${f[0]}</strong><br>
+      🏮 店長：${ranked[0]?.c.name||"—"}<br>
+      🌿 副店長：${ranked[1]?.c.name||"—"}<br>
+      📜 補欠：${ranked[2]?.c.name||"—"}
     `;
-    result.appendChild(tr);
+    result.appendChild(div);
   });
-
-  alert("配置と育成が完了しました");
 }
 </script>
 
