@@ -56,7 +56,7 @@ button:hover{
 
 .char-grid{
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
   gap:16px;
 }
 
@@ -65,6 +65,27 @@ button:hover{
   border-radius:14px;
   padding:12px;
   background:#fffdf9;
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+}
+
+.char-card.off{
+  opacity:0.4;
+  filter:grayscale(40%);
+}
+
+.char-img{
+  width:64px;
+  height:64px;
+  border-radius:10px;
+  object-fit:cover;
+  border:1px solid var(--border);
+  flex-shrink:0;
+}
+
+.char-info{
+  flex:1;
 }
 
 .char-name{
@@ -91,11 +112,6 @@ button:hover{
   padding:10px;
   margin-bottom:10px;
   box-shadow:0 4px 8px rgba(0,0,0,0.12);
-}
-
-.char-card.off {
-  opacity: 0.4;
-  filter: grayscale(40%);
 }
 </style>
 </head>
@@ -151,7 +167,14 @@ const characters = [
   ["ジャンヌ・ダルク",["将棋","馬","生け花"],62],
   ["鐘無艶",["茶","武","書道"],91],
   ["鈕祜禄氏",["茶","武","絵画"],40],
-  ["ヴィクトリア",["茶","武","将棋"],3]
+  ["ヴィクトリア",["茶","武","将棋"],3],
+
+  ["柳如是",["酒","馬","生け花"],0],
+  ["北条政子",["絵画","剣","琴"],0],
+  ["楊玉環",["茶","武","将棋"],0],
+  ["エリザベス",["詩歌","射","酒"],0],
+  ["嫦娥",["絵画","剣","琴"],0],
+  ["ミーユエ",["将棋","馬","生け花"],0]
 ];
 
 const state=[];
@@ -164,14 +187,20 @@ characters.forEach(c=>{
   const d=document.createElement("div");
   d.className="char-card";
   d.innerHTML=`
-    <label>
-      <input type="checkbox" checked onchange="obj.use=this.checked">
-      <span class="char-name">${obj.name}</span>
-    </label>
-    <div class="skills">🎨 ${obj.skills.join("・")}</div>
-    <div class="lv">
-      Lv <input type="number" value="${obj.lv}" style="width:60px"
-      onchange="obj.lv=this.value">
+    <img class="char-img"
+         src="img/${obj.name}.jpg"
+         alt="${obj.name}"
+         onerror="this.onerror=null;this.src='img/${obj.name}.png'">
+    <div class="char-info">
+      <label>
+        <input type="checkbox" checked onchange="obj.use=this.checked">
+        <span class="char-name">${obj.name}</span>
+      </label>
+      <div class="skills">🎨 ${obj.skills.join("・")}</div>
+      <div class="lv">
+        Lv <input type="number" value="${obj.lv}" style="width:60px"
+        onchange="obj.lv=this.value">
+      </div>
     </div>
   `;
   charArea.appendChild(d);
