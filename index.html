@@ -151,19 +151,21 @@ const state=[];
 const charArea=document.getElementById("charArea");
 
 characters.forEach(c=>{
-  const obj={name:c[0],skills:c[1],lv:c[2],use:false};
+  const obj={name:c[0],skills:c[1],lv:c[2],use:true};
   state.push(obj);
 
   const d=document.createElement("div");
   d.className="char-card";
   d.innerHTML=`
     <label>
-      <input type="checkbox" onchange="obj.use=this.checked">
+      <input type="checkbox" checked onchange="obj.use=this.checked">
       <span class="char-name">${obj.name}</span>
     </label>
     <div class="skills">🎨 ${obj.skills.join("・")}</div>
-    <div class="lv">Lv <input type="number" value="${obj.lv}" style="width:60px"
-      onchange="obj.lv=this.value"></div>
+    <div class="lv">
+      Lv <input type="number" value="${obj.lv}" style="width:60px"
+      onchange="obj.lv=this.value">
+    </div>
   `;
   charArea.appendChild(d);
 });
