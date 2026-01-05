@@ -21,16 +21,8 @@ body{
   color:#4a3b2a;
 }
 
-h1{
-  text-align:center;
-  margin-bottom:30px;
-}
-
-h2{
-  margin-top:40px;
-  border-left:6px solid var(--accent);
-  padding-left:10px;
-}
+h1{text-align:center;margin-bottom:30px;}
+h2{margin-top:40px;border-left:6px solid var(--accent);padding-left:10px;}
 
 .card{
   background:var(--card);
@@ -69,12 +61,7 @@ h2{
   flex-shrink:0;
 }
 
-.char-info{ flex:1; }
-
-.char-name{
-  font-weight:bold;
-  font-size:18px;
-}
+.char-name{font-weight:bold;font-size:18px;}
 
 .exec-btn{
   margin-top:6px;
@@ -90,12 +77,8 @@ h2{
   background:linear-gradient(#ffdede,#f2b5b5);
 }
 
-.skills{
-  font-size:14px;
-  margin:6px 0;
-}
+.skills{font-size:14px;margin:6px 0;}
 
-/* 任命表示 */
 .assign{
   margin:6px 0;
   padding:6px;
@@ -119,19 +102,9 @@ h2{
   color:#4a3b2a;
 }
 
-.assign-facility{
-  margin-top:4px;
-  font-size:11px;
-}
+.assign-facility{margin-top:4px;font-size:11px;}
 
-.lv{
-  font-size:14px;
-}
-
-.lv input{
-  width:50px;
-  text-align:center;
-}
+.lv input{width:50px;text-align:center;}
 
 .lv-btns button{
   background:var(--accent2);
@@ -142,8 +115,6 @@ h2{
   font-size:12px;
   cursor:pointer;
 }
-
-.facility{ margin-bottom:6px; }
 
 .result-card{
   background:#fff;
@@ -160,18 +131,13 @@ h2{
 <h1>🌸 育成バランス配置シミュレーター 🌸</h1>
 
 <h2>① 知己一覧</h2>
-<div class="card">
-  <div class="char-grid" id="charArea"></div>
-</div>
-
-<h2>② 施設一覧</h2>
-<div class="card" id="facilityArea"></div>
+<div class="card"><div class="char-grid" id="charArea"></div></div>
 
 <h2>③ 配置結果</h2>
 <div class="card" id="result"></div>
 
 <script>
-const STORAGE_KEY="chigi_state_v3";
+const STORAGE_KEY="chigi_state_v4";
 
 const facilities=[
  ["朱雀大通り","絵画","剣","琴"],
@@ -204,13 +170,7 @@ const characters=[
  ["ジャンヌ・ダルク",["将棋","馬","生け花"],62],
  ["鐘無艶",["茶","武","書道"],91],
  ["鈕祜禄氏",["茶","武","絵画"],40],
- ["ヴィクトリア",["茶","武","将棋"],3],
- ["柳如是",["酒","馬","生け花"],0],
- ["北条政子",["絵画","剣","琴"],0],
- ["楊玉環",["茶","武","将棋"],0],
- ["エリザベス",["詩歌","射","酒"],0],
- ["嫦娥",["絵画","剣","琴"],0],
- ["ミーユエ",["将棋","馬","生け花"],0]
+ ["ヴィクトリア",["茶","武","将棋"],3]
 ];
 
 const saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||"{}");
@@ -223,73 +183,68 @@ function saveState(){
   localStorage.setItem(STORAGE_KEY,JSON.stringify(o));
 }
 
-function renderCharacters(){
-  charArea.innerHTML="";
-  state.length=0;
+characters.forEach((c,i)=>{
+  const s=saved[c[0]]||{};
+  const obj={
+    name:c[0],
+    skills:c[1],
+    lv:s.lv??c[2],
+    owned:s.owned??(c[2]>0),
+    assign:null
+  };
+  state.push(obj);
 
-  characters.forEach((c,i)=>{
-    const s=saved[c[0]]||{};
-    const obj={
-      name:c[0],
-      skills:c[1],
-      lv:s.lv??c[2],
-      owned:s.owned??(c[2]>0),
-      assign:null
-    };
-    state.push(obj);
+  const d=document.createElement("div");
+  d.className="char-card"+(obj.owned?"":" off");
+  d.dataset.index=i;
 
-    const d=document.createElement("div");
-    d.className="char-card"+(obj.owned?"":" off");
+  d.innerHTML=`
+    <img class="char-img" src="img/${obj.name}.jpg"
+      onerror="this.onerror=null;this.src='img/${obj.name}.png'">
 
-    d.innerHTML=`
-      <img class="char-img" src="img/${obj.name}.jpg"
-       onerror="this.onerror=null;this.src='img/${obj.name}.png'">
+    <div>
+      <div class="char-name">${obj.name}</div>
 
-      <div class="char-info">
-        <div class="char-name">${obj.name}</div>
+      <button class="exec-btn ${obj.owned?"owned":""}"
+        onclick="toggleOwned(${i})">
+        ${obj.owned?"保有中":"未保有"}
+      </button>
 
-        <button class="exec-btn ${obj.owned?"owned":""}"
-          onclick="toggleOwned(${i})">
-          ${obj.owned?"保有中":"未保有"}
-        </button>
+      <div class="skills">🎨 ${obj.skills.join("・")}</div>
 
-        <div class="skills">🎨 ${obj.skills.join("・")}</div>
+      <div class="assign">
+        <span class="role">店長</span>
+        <span class="role">副店長</span>
+        <span class="role">補欠</span>
+        <div class="assign-facility">—</div>
+      </div>
 
-        <div class="assign">
-          <span class="role">店長</span>
-          <span class="role">副店長</span>
-          <span class="role">補欠</span>
-          <div class="assign-facility">—</div>
+      <div class="lv">
+        Lv <input type="number" value="${obj.lv}" readonly ${obj.owned?"":"disabled"}>
+        <div class="lv-btns">
+          <button onclick="changeLv(${i},10)">+10</button>
+          <button onclick="changeLv(${i},1)">+1</button>
+          <button onclick="changeLv(${i},-1)">-1</button>
+          <button onclick="changeLv(${i},-10)">-10</button>
         </div>
-
-        <div class="lv">
-          Lv <input type="number" value="${obj.lv}" readonly ${obj.owned?"":"disabled"}>
-          <div class="lv-btns">
-            <button onclick="changeLv(${i},10)">+10</button>
-            <button onclick="changeLv(${i},1)">+1</button>
-            <button onclick="changeLv(${i},-1)">-1</button>
-            <button onclick="changeLv(${i},-10)">-10</button>
-          </div>
-        </div>
-      </div>`;
-    charArea.appendChild(d);
-  });
-}
+      </div>
+    </div>`;
+  charArea.appendChild(d);
+});
 
 function toggleOwned(i){
-  const c = state[i];
-  c.owned = !c.owned;
+  const c=state[i];
+  c.owned=!c.owned;
 
-  const card = charArea.children[i];
-  card.classList.toggle("off", !c.owned);
+  const card=charArea.children[i];
+  card.classList.toggle("off",!c.owned);
 
-  const btn = card.querySelector(".exec-btn");
-  btn.textContent = c.owned ? "保有中" : "未保有";
-  btn.classList.toggle("owned", c.owned);
+  const btn=card.querySelector(".exec-btn");
+  btn.textContent=c.owned?"保有中":"未保有";
+  btn.classList.toggle("owned",c.owned);
 
-  // Lv操作の有効・無効
-  card.querySelectorAll(".lv input, .lv button")
-    .forEach(el => el.disabled = !c.owned);
+  card.querySelectorAll(".lv input,.lv button")
+    .forEach(el=>el.disabled=!c.owned);
 
   saveState();
   run();
@@ -298,17 +253,10 @@ function toggleOwned(i){
 function changeLv(i,d){
   if(!state[i].owned)return;
   state[i].lv=Math.max(0,state[i].lv+d);
+  charArea.children[i].querySelector(".lv input").value=state[i].lv;
   saveState();
   run();
 }
-
-const facilityArea=document.getElementById("facilityArea");
-facilities.forEach(f=>{
-  const d=document.createElement("div");
-  d.className="facility";
-  d.textContent=`${f[0]}：${f[1]}・${f[2]}・${f[3]}`;
-  facilityArea.appendChild(d);
-});
 
 function run(){
   const result=document.getElementById("result");
@@ -317,29 +265,19 @@ function run(){
   const used=new Set();
 
   facilities.forEach(f=>{
-    const req=f.slice(1);
     const ranked=state
-      .filter(c=>c.owned && c.lv>0 && !used.has(c.name))
-      .map(c=>({c,match:req.filter(r=>c.skills.includes(r)).length}))
+      .filter(c=>c.owned&&!used.has(c.name))
+      .map(c=>({c,match:f.slice(1).filter(r=>c.skills.includes(r)).length}))
       .sort((a,b)=>b.match-a.match||b.c.lv-a.c.lv);
 
-    if(ranked[0]){
-      ranked[0].c.assign={facility:f[0],role:"店長"};
-      used.add(ranked[0].c.name);
-    }
-    if(ranked[1]){
-      ranked[1].c.assign={facility:f[0],role:"副店長"};
-      used.add(ranked[1].c.name);
-    }
-    if(ranked[2]){
-      ranked[2].c.assign={facility:f[0],role:"補欠"};
-    }
+    if(ranked[0]){ranked[0].c.assign={facility:f[0],role:"店長"};used.add(ranked[0].c.name);}
+    if(ranked[1]){ranked[1].c.assign={facility:f[0],role:"副店長"};used.add(ranked[1].c.name);}
+    if(ranked[2]){ranked[2].c.assign={facility:f[0],role:"補欠"};}
 
     const div=document.createElement("div");
     div.className="result-card";
     div.innerHTML=`<strong>${f[0]}</strong><br>
-      🏮 店長：${ranked[0]?.c.name||"—"}<br>
-      🌿 副店長：${ranked[1]?.c.name||"—"}`;
+      🏮 店長：${ranked[0]?.c.name||"—"} / 副：${ranked[1]?.c.name||"—"}`;
     result.appendChild(div);
   });
 
@@ -347,11 +285,9 @@ function run(){
     const box=charArea.children[i].querySelector(".assign");
     const roles=box.querySelectorAll(".role");
     roles.forEach(r=>r.classList.remove("active"));
-
     if(c.assign){
-      if(c.assign.role==="店長")roles[0].classList.add("active");
-      if(c.assign.role==="副店長")roles[1].classList.add("active");
-      if(c.assign.role==="補欠")roles[2].classList.add("active");
+      const idx={店長:0,副店長:1,補欠:2}[c.assign.role];
+      roles[idx].classList.add("active");
       box.querySelector(".assign-facility").textContent="🏮 "+c.assign.facility;
     }else{
       box.querySelector(".assign-facility").textContent="—";
@@ -359,7 +295,6 @@ function run(){
   });
 }
 
-renderCharacters();
 run();
 </script>
 
