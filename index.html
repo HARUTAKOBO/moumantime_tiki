@@ -183,11 +183,17 @@ const state=[];
 const charArea=document.getElementById("charArea");
 
 characters.forEach(c=>{
-  const obj={name:c[0],skills:c[1],lv:c[2],use:true};
+  const obj={
+    name:c[0],
+    skills:c[1],
+    lv:c[2],
+    use: c[2] > 0   // ★ Lv0なら自動でfalse
+  };
   state.push(obj);
 
   const d=document.createElement("div");
-  d.className="char-card";
+  d.className="char-card" + (obj.use ? "" : " off");
+
   d.innerHTML=`
     <img class="char-img"
          src="img/${obj.name}.jpg"
@@ -195,18 +201,28 @@ characters.forEach(c=>{
          onerror="this.onerror=null;this.src='img/${obj.name}.png'">
     <div class="char-info">
       <label>
-        <input type="checkbox" checked onchange="obj.use=this.checked">
+        <input type="checkbox"
+               ${obj.use ? "checked" : ""}
+               onchange="obj.use=this.checked; d.classList.toggle('off', !this.checked)">
         <span class="char-name">${obj.name}</span>
       </label>
       <div class="skills">🎨 ${obj.skills.join("・")}</div>
       <div class="lv">
         Lv <input type="number" value="${obj.lv}" style="width:60px"
-        onchange="obj.lv=this.value">
+        onchange="
+          obj.lv=this.value;
+          if(this.value==0){
+            obj.use=false;
+            this.closest('.char-card').classList.add('off');
+            this.closest('.char-card').querySelector('input[type=checkbox]').checked=false;
+          }
+        ">
       </div>
     </div>
   `;
   charArea.appendChild(d);
 });
+
 
 const facilityArea=document.getElementById("facilityArea");
 facilities.forEach(f=>{
