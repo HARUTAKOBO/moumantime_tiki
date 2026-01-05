@@ -11,6 +11,8 @@
   --accent:#f2b5b5;
   --accent2:#b5d8f2;
   --border:#e0cfc2;
+  --owned:#f2b5b5;
+  --unowned:#cccccc;
 }
 
 body{
@@ -32,17 +34,6 @@ h2{
   padding-left:10px;
 }
 
-button{
-  background: var(--accent2);
-  border:none;
-  padding:6px 10px;
-  font-size:12px;
-  border-radius:10px;
-  cursor:pointer;
-}
-
-button:hover{ opacity:0.85; }
-
 .card{
   background:var(--card);
   border-radius:16px;
@@ -53,7 +44,7 @@ button:hover{ opacity:0.85; }
 
 .char-grid{
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
   gap:16px;
 }
 
@@ -75,10 +66,8 @@ button:hover{ opacity:0.85; }
 .char-img{
   max-width:70px;
   max-height:90px;
-  width:auto;
-  height:auto;
-  border-radius:10px;
   object-fit:contain;
+  border-radius:10px;
   border:1px solid var(--border);
   flex-shrink:0;
 }
@@ -95,8 +84,28 @@ button:hover{ opacity:0.85; }
   margin:6px 0;
 }
 
-.lv{
+.owned-btn{
   margin-top:6px;
+}
+
+.owned-btn button{
+  border:none;
+  border-radius:14px;
+  padding:4px 10px;
+  font-size:12px;
+  cursor:pointer;
+}
+
+.owned-true{
+  background:var(--owned);
+}
+
+.owned-false{
+  background:var(--unowned);
+}
+
+.lv{
+  margin-top:8px;
   font-size:14px;
 }
 
@@ -105,13 +114,14 @@ button:hover{ opacity:0.85; }
   text-align:center;
 }
 
-.lv-btns{
-  margin-top:4px;
-}
-
 .lv-btns button{
-  background:var(--accent);
+  background:var(--accent2);
+  border:none;
+  border-radius:8px;
+  padding:4px 6px;
   margin:2px;
+  font-size:12px;
+  cursor:pointer;
 }
 
 .facility{ margin-bottom:8px; }
@@ -130,7 +140,7 @@ button:hover{ opacity:0.85; }
 
 <h1>🌸 育成バランス配置シミュレーター 🌸</h1>
 
-<h2>① 保有している知己</h2>
+<h2>① 知己一覧</h2>
 <div class="card">
   <div class="char-grid" id="charArea"></div>
 </div>
@@ -138,11 +148,7 @@ button:hover{ opacity:0.85; }
 <h2>② 施設一覧</h2>
 <div class="card" id="facilityArea"></div>
 
-<div style="text-align:center;margin:30px;">
-  <button onclick="run()">✨ 配置・育成を実行 ✨</button>
-</div>
-
-<h2>③ 配置結果</h2>
+<h2>③ 配置結果（自動更新）</h2>
 <div class="card" id="result"></div>
 
 <script>
@@ -189,51 +195,79 @@ const characters = [
 const state=[];
 const charArea=document.getElementById("charArea");
 
-characters.forEach(c=>{
-  const obj={
-    name:c[0],
-    skills:c[1],
-    lv:c[2],
-    owned:c[2]>0
-  };
-  state.push(obj);
+function renderCharacters(){
+  charArea.innerHTML="";
+  state.length=0;
 
-  const d=document.createElement("div");
-  d.className="char-card"+(obj.owned?"":" off");
+  characters.forEach((c,index)=>{
+    const obj={
+      name:c[0],
+      skills:c[1],
+      lv:c[2],
+      owned:c[2]>0
+    };
+    state.push(obj);
 
-  d.innerHTML=`
-    <img class="char-img"
-      src="img/${obj.name}.jpg"
-      onerror="this.onerror=null;this.src='img/${obj.name}.png'">
+    const d=document.createElement("div");
+    d.className="char-card"+(obj.owned?"":" off");
 
-    <div class="char-info">
-      <label>
-        <input type="checkbox" ${obj.owned?"checked":""}
-          onchange="
-            obj.owned=this.checked;
-            d.classList.toggle('off',!this.checked);
-            d.querySelectorAll('.lv input, .lv button')
-              .forEach(el=>el.disabled=!this.checked);
-          ">
-        <span class="char-name">${obj.name}</span>
-      </label>
+    d.innerHTML=`
+      <img class="char-img"
+        src="img/${obj.name}.jpg"
+        onerror="this.onerror=null;this.src='img/${obj.name}.png'">
 
-      <div class="skills">🎨 ${obj.skills.join("・")}</div>
+      <div class="char-info">
+        <div class="char-name">${obj.name}</div>
 
-      <div class="lv">
-        Lv
-        <input type="number" value="${obj.lv}" readonly ${obj.owned?"":"disabled"}>
-        <div class="lv-btns">
-          <button ${obj.owned?"":"disabled"} onclick="obj.lv+=10;this.parentNode.previousElementSibling.value=obj.lv">+10</button>
-          <button ${obj.owned?"":"disabled"} onclick="obj.lv+=1; this.parentNode.previousElementSibling.value=obj.lv">+1</button>
-          <button ${obj.owned?"":"disabled"} onclick="obj.lv=Math.max(0,obj.lv-1); this.parentNode.previousElementSibling.value=obj.lv">-1</button>
-          <button ${obj.owned?"":"disabled"} onclick="obj.lv=Math.max(0,obj.lv-10);this.parentNode.previousElementSibling.value=obj.lv">-10</button>
+        <div class="owned-btn">
+          <button class="${obj.owned?'owned-true':'owned-false'}"
+            onclick="toggleOwned(${index})">
+            ${obj.owned?'保有':'未保有'}
+          </button>
+        </div>
+
+        <div class="skills">🎨 ${obj.skills.join("・")}</div>
+
+        <div class="lv">
+          Lv
+          <input type="number" value="${obj.lv}" readonly ${obj.owned?"":"disabled"}>
+          <div class="lv-btns">
+            <button onclick="changeLv(${index},10)">+10</button>
+            <button onclick="changeLv(${index},1)">+1</button>
+            <button onclick="changeLv(${index},-1)">-1</button>
+            <button onclick="changeLv(${index},-10)">-10</button>
+          </div>
         </div>
       </div>
-    </div>
-  `;
-  charArea.appendChild(d);
-});
+    `;
+    charArea.appendChild(d);
+  });
+}
+
+function toggleOwned(index){
+  const c=state[index];
+  c.owned=!c.owned;
+
+  const card=charArea.children[index];
+  card.classList.toggle("off",!c.owned);
+
+  const btn=card.querySelector(".owned-btn button");
+  btn.textContent=c.owned?"保有":"未保有";
+  btn.className=c.owned?"owned-true":"owned-false";
+
+  card.querySelectorAll(".lv input,.lv button")
+    .forEach(el=>el.disabled=!c.owned);
+
+  run();
+}
+
+function changeLv(index,delta){
+  const c=state[index];
+  if(!c.owned) return;
+  c.lv=Math.max(0,c.lv+delta);
+  charArea.children[index].querySelector(".lv input").value=c.lv;
+  run();
+}
 
 const facilityArea=document.getElementById("facilityArea");
 facilities.forEach(f=>{
@@ -269,6 +303,9 @@ function run(){
     result.appendChild(div);
   });
 }
+
+renderCharacters();
+run();
 </script>
 
 </body>
